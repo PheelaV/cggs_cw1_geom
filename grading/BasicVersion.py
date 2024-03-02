@@ -39,3 +39,4 @@ if __name__ == '__main__':
             print("w error: ", np.amax(loaded_data['w'] - w))
             print("RBFCentres error: ", np.amax(loaded_data['RBFCentres'] - RBFCentres))
             print("RBFValues error: ", np.amax(loaded_data['RBFValues'] - RBFValues))
+            print("")

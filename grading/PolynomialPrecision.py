@@ -29,6 +29,7 @@ if __name__ == '__main__':
         for LIndex in range(len(LRange)):
             root, old_extension = os.path.splitext(off_file_path)
             pickle_file_path = root + '-polynomial-precision-L-' + str(LIndex) + '.data'
+            print(f"pickle_file_path: {pickle_file_path}")
             with open(pickle_file_path, 'rb') as pickle_file:
                 loaded_data = pickle.load(pickle_file)
 
@@ -38,7 +39,8 @@ if __name__ == '__main__':
 
             RBFValues = evaluate_RBF(loaded_data['xyz'], RBFCentres, polyharmonic, w, l=loaded_data['l'], a=a)
 
-            print("w error: ", np.amax(loaded_data['w'] - w))
-            print("RBFCentres error: ", np.amax(loaded_data['RBFCentres'] - RBFCentres))
-            print("a error: ", np.amax(loaded_data['a'] - a))
-            print("RBFValues error: ", np.amax(loaded_data['RBFValues'] - RBFValues))
+            print(f"w error: {np.amax(loaded_data['w'] - w)}")
+            print(f"RBFCentres error: {np.amax(loaded_data['RBFCentres'] - RBFCentres)}")
+            print(f"a error: {np.amax(loaded_data['a'] - a)}")
+            print(f"RBFValues error: {np.amax(loaded_data['RBFValues'] - RBFValues)}")
+            print("*"*20)
