@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "q3",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "q3.py",
+            "cwd": "${cwd}${/}code${/}",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "basic",
             "type": "debugpy",
             "request": "launch",

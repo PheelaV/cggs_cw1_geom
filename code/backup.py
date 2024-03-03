@@ -53,14 +53,13 @@ def compute_RBF_weights(inputPoints, inputNormals, RBFFunction, epsilon, RBFCent
     rbf_normals = inputNormals[RBFCentreIndices] if len(RBFCentreIndices) > 0 else inputNormals
     # rbf_normals = inputNormals if no_center_indices else inputNormals[RBFCentreIndices]
 
+    rbf_inputs_len = rbf_centers.shape[0]
 
-    inputs_len = inputPoints.shape[0]
     # we always have +- epsilon points for either N or 3N points
     inputPoints = np.vstack((
         inputPoints,
         inputPoints + epsilon * inputNormals,
         inputPoints - epsilon * inputNormals))
-    
 
     # we only have +- epsilon points depending on the useOffPoints flag and the RBFCentreIndices
     # either M or 3M points where if RBFCentreIndices is not specified, M = N
@@ -72,10 +71,11 @@ def compute_RBF_weights(inputPoints, inputNormals, RBFFunction, epsilon, RBFCent
         
     # Compute the RBF matrix either 3Mx3N or Mx3N depending on useOffPoints where
     # if RBFCentreIndices is not specified, M = N
-    A = RBFFunction(cdist(inputPoints, rbf_centers, 'euclidean'))
+    distance_matrix = cdist(rbf_centers, inputPoints, 'euclidean')
+    A = RBFFunction(distance_matrix)
     # Initialize b to zeros for all points
-    # b = np.hstack((np.zeros(inputs_len), np.repeat(epsilon, inputs_len), np.repeat(-epsilon, inputs_len))) if useOffPoints else np.zeros(inputs_len)
-    b = np.hstack((np.zeros(inputs_len), np.repeat(epsilon, inputs_len), np.repeat(-epsilon, inputs_len)))
+    b = np.hstack((np.zeros(rbf_inputs_len), np.repeat(epsilon, rbf_inputs_len), np.repeat(-epsilon, rbf_inputs_len))) if useOffPoints else np.zeros(rbf_inputs_len)
+
     if l >= 0:
         triplets = get_triplets(l)
         Q = np.prod(rbf_centers[:, None, :] ** triplets[None, :, :], axis=2)
@@ -86,10 +86,9 @@ def compute_RBF_weights(inputPoints, inputNormals, RBFFunction, epsilon, RBFCent
     if A.shape[0] != A.shape[1]:
         # Overdetermined
         # Solve the least squares system A^T A w = A^T b
-        # ATA = np.dot(A.T, A)
-        # ATb = np.dot(A.T, b)
-        w, _, _, _ = np.linalg.lstsq(A, b)
-        # w, _, _, _ = np.linalg.lstsq(ATA, ATb, rcond=None)
+        ATA = np.dot(A.T, A)
+        ATb = np.dot(A.T, b)
+        w, _, _, _ = np.linalg.lstsq(ATA, ATb, rcond=None)
     else:
         # Single solution
         # Solve the linear system using LU decomposition Aw = b => LUw = b
