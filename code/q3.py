@@ -11,6 +11,7 @@ if __name__ == '__main__':
 
     ps.init()
     file_name, epsilon, RBF_function = 'bunny-500.off', 0.05, polyharmonic
+    # file_name, epsilon, RBF_function = 'fertility-2500.off', 0.05, polyharmonic
 
     # inputPointNormals, _ = load_off_file(os.path.join('..', 'data', 'fertility-2500.off'))
     inputPointNormals, _ = load_off_file(os.path.join('..', 'data', file_name))
@@ -48,19 +49,35 @@ if __name__ == '__main__':
     ## you code of computation and evaluation goes here
 
     no_points = inputPoints.shape[0]
-    
     use_off_points = True
-    w_golden, RBF_centers_golden, _ = compute_RBF_weights(inputPoints, inputNormals, RBF_function, epsilon, useOffPoints=use_off_points, l=-1)
-    RBFValues_golden = evaluate_RBF(xyz, RBF_centers_golden, RBF_function, w_golden)
+    
+    w_golden, RBF_centers_golden, _ = compute_RBF_weights(inputPoints.copy(), inputNormals, RBF_function, epsilon, useOffPoints=use_off_points, l=-1)
+    rbf_iter_golden = evaluate_RBF(inputPoints, RBF_centers_golden, RBF_function, w_golden)
 
-    included = np.random.choice(no_points, int(no_points * 0.7), replace=False)
+    no_points_init = int(no_points * 0.05)
+    no_points_end = int(no_points * 0.15)
+    included = [x for x in np.random.choice(no_points, no_points_init, replace=False)]
+
+    while len(included) <= no_points_end:
+        rbf_renctre_indices = np.array(included)
+        w, RBF_centers, _ = compute_RBF_weights(inputPoints.copy(), inputNormals, RBF_function, epsilon, useOffPoints=use_off_points, RBFCentreIndices=rbf_renctre_indices, l=-1)
+        rbf_iter_error = evaluate_RBF(inputPoints, RBF_centers, RBF_function, w)
+
+        # select the largest error point that is not included
+        # Create a boolean mask initialized to True
+        mask = np.ones(rbf_iter_error.shape, dtype=bool)
+        # Set selected indices to False
+        mask[included] = False
+        # Use the mask to access elements
+        error_index = np.argmax(np.abs(rbf_iter_golden[mask] - rbf_iter_error[mask]))
+        error = np.abs(rbf_iter_golden[mask][error_index] - rbf_iter_error[mask][error_index])
+        included.append(np.arange(rbf_iter_golden.shape[0])[mask][error_index])
+        print(f"Error: {error:.4f}, no points: {len(included)}, error index: {error_index}")
+    print(f"Final size: {len(included)}")
+    #########################
+
     w, RBF_centers, _ = compute_RBF_weights(inputPoints, inputNormals, RBF_function, epsilon, useOffPoints=use_off_points, RBFCentreIndices=included, l=-1)
     RBFValues = evaluate_RBF(xyz, RBF_centers, RBF_function, w)
-
-    error_index = np.argmax(np.abs(RBFValues_golden - RBFValues))
-    error = np.abs(RBFValues_golden[error_index] - RBFValues[error_index])
-
-    #########################
 
     #fitting to grid shape again
     RBFValues = np.reshape(RBFValues, X.shape)

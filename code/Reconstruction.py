@@ -8,12 +8,12 @@ from functools import partial
 
 if __name__ == '__main__':
     ps.init()
-    # file_name, epsilon, RBF_function, l = 'bunny-500.off', 0.05, polyharmonic, -1
+    file_name, epsilon, RBF_function, l = 'bunny-500.off', 0.05, polyharmonic, -1
     # file_name, epsilon, RBF_function, l = 'bunny-500.off', 0.05, polyharmonic, 0
     # file_name, epsilon, RBF_function, l = 'plane.off', 0.1, biharmonic, 0
     # file_name, epsilon, RBF_function, l = 'hyperbolic_paraboloid.off', 0.1, polyharmonic, 2
     # file_name, epsilon, RBF_function, l = 'cat.off', 0.05, polyharmonic, 3
-    file_name, epsilon, RBF_function, l = 'lion-3000.off', 0.05, partial(Wendland, beta=0.5), 1
+    # file_name, epsilon, RBF_function, l = 'lion-3000.off', 0.05, partial(Wendland, beta=0.5), 1
     # file_name, epsilon, RBF_function, l = 'lion-3000.off', 0.05, biharmonic, 2
     # file_name, epsilon, RBF_function, l = 'fertility-2500.off', 0.01, polyharmonic, -1
 

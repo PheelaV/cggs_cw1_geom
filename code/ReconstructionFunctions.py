@@ -136,6 +136,45 @@ def evaluate_RBF(xyz, centres, RBFFunction, w, l=-1, a=[]):
 
     return values
 
+def compute_polynomial_coeff(centres, l):
+    base_powers = [list(range(l+1))] * 3
+    coord_powers = np.array(np.meshgrid(*base_powers)).T.reshape(-1,3)
+    coord_powers = coord_powers[coord_powers.sum(axis=1) <= l]
+    L = coord_powers.shape[0]
+    N = centres.shape[0]
+
+    return np.power(np.broadcast_to(centres[:, np.newaxis, :], (N, L, 3)), coord_powers).prod(axis=2)
+
+def evaluate_RBF2(xyz, centres, RBFFunction, w, l=-1, a=[]):
+    ###Complate RBF evaluation here
+    all_values = []
+    print(xyz.shape, centres.shape)
+
+    maxcdist, mincdist = -1e9, 1e9
+    maxrbfdist, minrbfdist = -1e9, 1e9
+    for i in range(0, xyz.shape[0], 5000):
+        cdists = cdist(xyz[i:i+5000], centres)
+        dists = RBFFunction(cdists)
+
+        maxcdist = max(maxcdist, np.max(cdists))
+        mincdist = min(mincdist, np.min(cdists))
+        maxrbfdist = max(maxrbfdist, np.max(dists))
+        minrbfdist = min(minrbfdist, np.min(dists))
+
+        values = dists @ w
+        if l != -1:
+            values += compute_polynomial_coeff(xyz, l) @ a
+        all_values.append(values)
+    # if l >= 0 and len(a) > 0:
+    #     triplets = get_triplets(l)
+    #     poly_terms = np.prod(xyz[:, None, :] ** triplets[None, :, :], axis=2)
+    #     poly_values = np.dot(poly_terms, a)
+    #     all_values.append(poly_values)
+        # values += poly_values
+
+    # print(maxcdist, mincdist, maxrbfdist, minrbfdist)
+    return np.stack(all_values)
+
 def biharmonic(r):
     return r
 
